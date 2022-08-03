@@ -19,6 +19,7 @@ func main() {
 	gin.SetMode(gin.DebugMode)
 	r := gin.Default()
 	r.Use(mid.Cors())
+	r.Use(mid.Collector())
 
 	r.Run(":" + port)
 }
