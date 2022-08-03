@@ -1,9 +1,8 @@
 package main
 
 import (
-	"flag"
-
 	mid "api-takeover/middleware"
+	"flag"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,6 +19,7 @@ func main() {
 	r := gin.Default()
 	r.Use(mid.Cors())
 	r.Use(mid.Collector())
+	// r.StaticFS("/static", gin.Dir("tmp", true))
 
 	r.Run(":" + port)
 }
