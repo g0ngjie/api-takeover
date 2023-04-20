@@ -7,7 +7,7 @@ import (
 )
 
 const DIR_ROOT = "/config"
-const EXAMPLE_DIR = "/www.google.com"
+const EXAMPLE_DIR = "/api.google.com"
 
 type FileRules struct {
 	MatchUrl string
@@ -30,7 +30,7 @@ var MatchRules []FileMatchs
 
 // 示例文件
 func initExampleFile(path string) {
-	fileName := "www.exmaple.com_abc.txt"
+	fileName := "api.exmaple.com_abc.txt"
 	filePath := filepath.ToSlash(path + "/" + fileName)
 	f, err := os.Create(filePath)
 	util.Stderr(err)

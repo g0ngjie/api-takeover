@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strings"
 	"takeover/file"
+	"takeover/inspect"
+	"takeover/util"
 
 	"github.com/elazarl/goproxy"
 )
@@ -47,6 +49,24 @@ func handleResp(proxy *goproxy.ProxyHttpServer, domain string, rule file.FileRul
 			reg := regexp.MustCompile(matchPath)
 			if reg.MatchString(r.Request.URL.Path) {
 				r.Body = io.NopCloser(bytes.NewReader(rule.JsonByte))
+			}
+			return r
+		})
+}
+
+// 注入
+func handleInject(proxy *goproxy.ProxyHttpServer, domain string, target string) {
+	proxy.OnResponse(goproxy.ReqHostMatches(regexp.MustCompile(domain))).
+		DoFunc(func(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
+
+			contentType := r.Header.Get("Content-Type")
+			if contentType == "text/html" {
+				buffer := bytes.NewBuffer(make([]byte, 4096))
+				inspect.InjectConsole(buffer, target)
+				_, err := io.Copy(buffer, r.Body)
+				util.Stderr(err)
+				// 读取出来后要重新写回去，如果没有最终处理，就原样返回给客户端
+				r.Body = io.NopCloser(bytes.NewReader(bytes.Trim(buffer.Bytes(), "\x00")))
 			}
 			return r
 		})

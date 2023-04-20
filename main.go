@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 	"takeover/boot"
-	myProxy "takeover/proxy"
+	"takeover/proxy"
 
 	"github.com/elazarl/goproxy"
 )
@@ -14,11 +14,11 @@ func init() {
 }
 func main() {
 
-	proxy := goproxy.NewProxyHttpServer()
-	proxy.Verbose = false
+	ps := goproxy.NewProxyHttpServer()
+	ps.Verbose = false
 
 	println(":: 开始代理 ::")
-	myProxy.CreateProxy(proxy)
+	proxy.CreateProxy(ps)
 
-	log.Fatal(http.ListenAndServe(":1234", proxy))
+	log.Fatal(http.ListenAndServe(":1234", ps))
 }

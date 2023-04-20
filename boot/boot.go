@@ -7,6 +7,7 @@ import (
 
 // 顺序加载
 func Initiate() {
+	file.LoadYaml()
 	file.LoadCfg()
 	cert.SetCA()
 }
