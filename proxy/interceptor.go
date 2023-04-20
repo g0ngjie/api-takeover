@@ -54,22 +54,43 @@ func handleResp(proxy *goproxy.ProxyHttpServer, domain string, rule file.FileRul
 		})
 }
 
-// 注入
-func handleInject(proxy *goproxy.ProxyHttpServer, domain string, target string) {
+// ssl 脚本
+func handleSSlScript(proxy *goproxy.ProxyHttpServer, sslDomain, target string) {
+	proxy.OnResponse(goproxy.DstHostIs(sslDomain)).
+		DoFunc(func(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
+			return insertScript(r, target)
+		})
+}
+
+// http 脚本
+func handleScript(proxy *goproxy.ProxyHttpServer, domain, target string) {
 	proxy.OnResponse(goproxy.ReqHostMatches(regexp.MustCompile(domain))).
 		DoFunc(func(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
-
-			contentType := r.Header.Get("Content-Type")
-			if contentType == "text/html" {
-				buffer := bytes.NewBuffer(make([]byte, 4096))
-				inspect.InjectConsole(buffer, target)
-				_, err := io.Copy(buffer, r.Body)
-				util.Stderr(err)
-				// 读取出来后要重新写回去，如果没有最终处理，就原样返回给客户端
-				r.Body = io.NopCloser(bytes.NewReader(bytes.Trim(buffer.Bytes(), "\x00")))
-			}
-			return r
+			return insertScript(r, target)
 		})
+}
+
+func insertScript(r *http.Response, target string) *http.Response {
+	contentType := r.Header.Get("Content-Type")
+	if strings.HasPrefix(contentType, "text/html") {
+		buffer := bytes.NewBuffer(make([]byte, 4096))
+		inspect.InjectConsole(buffer, target)
+		_, err := io.Copy(buffer, r.Body)
+		util.Stderr(err)
+		// 读取出来后要重新写回去，如果没有最终处理，就原样返回给客户端
+		r.Body = io.NopCloser(bytes.NewReader(bytes.Trim(buffer.Bytes(), "\x00")))
+	}
+	return r
+}
+
+// 注入脚本
+func handleInject(proxy *goproxy.ProxyHttpServer, domain, target string) {
+	sslDomain := domain + ":443"
+	proxy.OnRequest(goproxy.ReqHostIs(sslDomain)).
+		HandleConnect(goproxy.AlwaysMitm)
+
+	handleScript(proxy, domain, target)
+	handleSSlScript(proxy, sslDomain, target)
 }
 
 // 拦截通道
