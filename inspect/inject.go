@@ -2,16 +2,13 @@ package inspect
 
 import (
 	"bytes"
-	"os"
-	"path/filepath"
 	"strings"
-	"takeover/file"
 )
 
-const SCRIPT_ROOT = "/inspect/scripts"
+const SCRIPT_ROOT = "/scripts"
 
 // bytesCombine 多个[]byte数组合并
-func bytesCombine(pBytes ...[]byte) []byte {
+func BytesCombine(pBytes ...[]byte) []byte {
 	len := len(pBytes)
 	s := make([][]byte, len)
 	for index := 0; index < len; index++ {
@@ -25,23 +22,16 @@ func bytesCombine(pBytes ...[]byte) []byte {
 func InjectConsole(buf *bytes.Buffer, target string) {
 
 	t := strings.ToUpper(target)
-	var injectFor string
+	var injectFor []byte
 
 	switch t {
 	case "VCONSOLE":
-		injectFor = "v.js"
+		injectFor = VCONSOLE
 	case "ERUDA":
-		injectFor = "ev.js"
+		injectFor = ERUDA
 	case "MDEBUG":
-		injectFor = "mv.js"
+		injectFor = MDEBUG
 	}
 
-	pwd, _ := os.Getwd()
-	var filePath = filepath.ToSlash(pwd + SCRIPT_ROOT + "/" + injectFor)
-	b := file.ReadFile(filePath)
-	const DOCTYPE = "<!DOCTYPE html>\r\n"
-	top := []byte(DOCTYPE + "<script>")
-	end := []byte("</script>")
-	appendJs := bytesCombine(top, b, end)
-	buf.Write(appendJs)
+	buf.Write(injectFor)
 }
