@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"takeover/boot"
@@ -9,16 +11,26 @@ import (
 	"github.com/elazarl/goproxy"
 )
 
+var (
+	port string
+	mode string
+)
+
 func init() {
+	flag.StringVar(&port, "p", "1234", "port")
+	flag.StringVar(&mode, "mode", "release", "runMode[debug, release]")
 	boot.Initiate()
 }
+
 func main() {
 
-	ps := goproxy.NewProxyHttpServer()
-	ps.Verbose = false
+	flag.Parse()
 
-	println(":: 开始代理 ::")
+	ps := goproxy.NewProxyHttpServer()
+	ps.Verbose = mode == "debug"
+
 	proxy.CreateProxy(ps)
 
-	log.Fatal(http.ListenAndServe(":1234", ps))
+	log.Printf("server listening :%s", port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), ps))
 }

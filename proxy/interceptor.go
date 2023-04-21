@@ -3,6 +3,7 @@ package proxy
 import (
 	"bytes"
 	"io"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -32,6 +33,7 @@ func handleSSlResp(proxy *goproxy.ProxyHttpServer, sslDomain string, rule file.F
 				matchPath := realMatch(rule.MatchUrl)
 				reg := regexp.MustCompile(matchPath)
 				if reg.MatchString(r.Request.URL.Path) {
+					log.Printf("[Modify]: %s", r.Request.URL)
 					r.Body = io.NopCloser(bytes.NewReader(rule.JsonByte))
 					return r
 				}

@@ -1,11 +1,12 @@
 package util
 
-import "fmt"
+import (
+	"log"
+)
 
 // 统一输出异常
 func Stderr(err error) {
 	if err != nil {
-		fmt.Println("[debug]err:", err)
-		panic(1)
+		log.Panic(err)
 	}
 }
