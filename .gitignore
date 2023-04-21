@@ -2,3 +2,4 @@ config
 config.yaml
 *.exe
 install_ca.crt
+output

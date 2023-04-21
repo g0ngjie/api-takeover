@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"takeover/boot"
 	"takeover/proxy"
+	"takeover/server"
 
 	"github.com/elazarl/goproxy"
 )
@@ -30,6 +31,8 @@ func main() {
 	ps.Verbose = mode == "debug"
 
 	proxy.CreateProxy(ps)
+
+	ps.NonproxyHandler = server.RegisterRouter()
 
 	log.Printf("server listening :%s", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), ps))
