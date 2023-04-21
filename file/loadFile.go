@@ -7,7 +7,7 @@ import (
 )
 
 const DIR_ROOT = "/config"
-const EXAMPLE_DIR = "/api.google.com"
+const EXAMPLE_DIR = "/api.google.com@443"
 
 type FileRules struct {
 	MatchUrl string

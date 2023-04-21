@@ -97,22 +97,28 @@ func insertScript(r *http.Response, target string) {
 
 // 注入脚本
 func handleInject(proxy *goproxy.ProxyHttpServer, domain, target string) {
-	sslDomain := domain + ":443"
-	proxy.OnRequest(goproxy.ReqHostIs(sslDomain)).
-		HandleConnect(goproxy.AlwaysMitm)
-
-	handleScript(proxy, domain, target)
-	handleSSlScript(proxy, sslDomain, target)
+	if strings.HasSuffix(domain, "@443") {
+		sslDomain := strings.Replace(domain, "@", ":", 1)
+		proxy.OnRequest(goproxy.ReqHostIs(sslDomain)).
+			HandleConnect(goproxy.AlwaysMitm)
+		handleSSlScript(proxy, sslDomain, target)
+	} else {
+		handleScript(proxy, domain, target)
+	}
 }
 
 // 拦截通道
 func interceptionChannel(proxy *goproxy.ProxyHttpServer, rule file.FileMatchs) {
-	sslDomain := rule.Domain + ":443"
-	proxy.OnRequest(goproxy.ReqHostIs(sslDomain)).
-		HandleConnect(goproxy.AlwaysMitm)
-
-	for _, api := range rule.RuleApis {
-		handleResp(proxy, rule.Domain, api)
-		handleSSlResp(proxy, sslDomain, api)
+	if strings.HasSuffix(rule.Domain, "@443") {
+		sslDomain := strings.Replace(rule.Domain, "@", ":", 1)
+		proxy.OnRequest(goproxy.ReqHostIs(sslDomain)).
+			HandleConnect(goproxy.AlwaysMitm)
+		for _, api := range rule.RuleApis {
+			handleSSlResp(proxy, sslDomain, api)
+		}
+	} else {
+		for _, api := range rule.RuleApis {
+			handleResp(proxy, rule.Domain, api)
+		}
 	}
 }
