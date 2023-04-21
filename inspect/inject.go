@@ -35,3 +35,8 @@ func InjectConsole(buf *bytes.Buffer, target string) {
 
 	buf.Write(injectFor)
 }
+
+// Tag
+func InjectTag(buf *bytes.Buffer) {
+	buf.Write(TAG_SCRIPT)
+}

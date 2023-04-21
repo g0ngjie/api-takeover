@@ -15,14 +15,16 @@ type YamlInspect struct {
 }
 
 type Yaml struct {
-	Inspect YamlInspect `yaml:"inspect"`
+	EnabledTag bool        `yaml:"enabled_tag"`
+	Inspect    YamlInspect `yaml:"inspect"`
 }
 
 const FILE_NAME = "config.yaml"
 
 var exmapleYaml = []byte(`# # 示例配置
-# inspect:
-#   enabled: true
+# enabled_tag: true # 标签
+# inspect:          # 调试
+#   enabled: false
 #   # vConsole|eruda|mdebug
 #   target: "vConsole"
 #   domains:

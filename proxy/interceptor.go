@@ -74,12 +74,22 @@ func handleScript(proxy *goproxy.ProxyHttpServer, domain, target string) {
 func insertScript(r *http.Response, target string) {
 	contentType := r.Header.Get("Content-Type")
 	if strings.HasPrefix(contentType, "text/html") {
-		log.Printf("[Inject][URL]: %s", r.Request.URL)
-		log.Printf("[Inject][Script]: %s", target)
 		buffer := bytes.NewBuffer(make([]byte, 4096))
-		inspect.InjectConsole(buffer, target)
+
+		if file.YamlCfg.Inspect.Enabled {
+			log.Printf("[Inject][Script][URL]: %s", r.Request.URL)
+			log.Printf("[Inject][Script]: %s", target)
+			inspect.InjectConsole(buffer, target)
+		}
+
 		_, err := io.Copy(buffer, r.Body)
 		util.Stderr(err)
+
+		if file.YamlCfg.EnabledTag {
+			log.Printf("[Inject][Tag]: %s", r.Request.URL)
+			inspect.InjectTag(buffer)
+		}
+
 		// 读取出来后要重新写回去，如果没有最终处理，就原样返回给客户端
 		r.Body = io.NopCloser(bytes.NewReader(bytes.Trim(buffer.Bytes(), "\x00")))
 	}
