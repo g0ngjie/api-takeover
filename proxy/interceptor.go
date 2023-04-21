@@ -14,67 +14,66 @@ import (
 	"github.com/elazarl/goproxy"
 )
 
-// 获取真实match url
+// 获取真实 match url
 func realMatch(matchUrl string) string {
 	targetUrl := strings.Split(matchUrl, ".txt")[0]
 	targetUrl = strings.ReplaceAll(targetUrl, "_", "/")
 	return "^/" + targetUrl + "*"
 }
 
-// ssl响应
+// ssl response
 func handleSSlResp(proxy *goproxy.ProxyHttpServer, sslDomain string, rule file.FileRules) {
 	proxy.OnResponse(goproxy.ReqHostIs(sslDomain)).
 		DoFunc(func(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
-			if r != nil {
-				if r.Request.Method == "OPTIONS" {
-					return r
-				}
-
-				matchPath := realMatch(rule.MatchUrl)
-				reg := regexp.MustCompile(matchPath)
-				if reg.MatchString(r.Request.URL.Path) {
-					log.Printf("[Modify]: %s", r.Request.URL)
-					r.Body = io.NopCloser(bytes.NewReader(rule.JsonByte))
-					return r
-				}
-			}
+			modifyRespBody(r, rule)
 			return r
 		})
 }
 
-// 响应
+// response
 func handleResp(proxy *goproxy.ProxyHttpServer, domain string, rule file.FileRules) {
 	proxy.OnResponse(goproxy.ReqHostMatches(regexp.MustCompile(domain))).
 		DoFunc(func(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
-
-			matchPath := realMatch(rule.MatchUrl)
-			reg := regexp.MustCompile(matchPath)
-			if reg.MatchString(r.Request.URL.Path) {
-				r.Body = io.NopCloser(bytes.NewReader(rule.JsonByte))
-			}
+			modifyRespBody(r, rule)
 			return r
 		})
 }
 
-// ssl 脚本
+// modify body
+func modifyRespBody(r *http.Response, rule file.FileRules) {
+	if r != nil && r.Request.Method != "OPTIONS" {
+		matchPath := realMatch(rule.MatchUrl)
+		reg := regexp.MustCompile(matchPath)
+		if reg.MatchString(r.Request.URL.Path) {
+			log.Printf("[Modify][Body]: %s", r.Request.URL)
+			r.Body = io.NopCloser(bytes.NewReader(rule.JsonByte))
+		}
+	}
+}
+
+// ssl script
 func handleSSlScript(proxy *goproxy.ProxyHttpServer, sslDomain, target string) {
-	proxy.OnResponse(goproxy.DstHostIs(sslDomain)).
+	proxy.OnResponse(goproxy.ReqHostIs(sslDomain)).
 		DoFunc(func(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
-			return insertScript(r, target)
+			insertScript(r, target)
+			return r
 		})
 }
 
-// http 脚本
+// script
 func handleScript(proxy *goproxy.ProxyHttpServer, domain, target string) {
 	proxy.OnResponse(goproxy.ReqHostMatches(regexp.MustCompile(domain))).
 		DoFunc(func(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
-			return insertScript(r, target)
+			insertScript(r, target)
+			return r
 		})
 }
 
-func insertScript(r *http.Response, target string) *http.Response {
+func insertScript(r *http.Response, target string) {
 	contentType := r.Header.Get("Content-Type")
 	if strings.HasPrefix(contentType, "text/html") {
+		log.Printf("[Inject][URL]: %s", r.Request.URL)
+		log.Printf("[Inject][Script]: %s", target)
 		buffer := bytes.NewBuffer(make([]byte, 4096))
 		inspect.InjectConsole(buffer, target)
 		_, err := io.Copy(buffer, r.Body)
@@ -82,7 +81,6 @@ func insertScript(r *http.Response, target string) *http.Response {
 		// 读取出来后要重新写回去，如果没有最终处理，就原样返回给客户端
 		r.Body = io.NopCloser(bytes.NewReader(bytes.Trim(buffer.Bytes(), "\x00")))
 	}
-	return r
 }
 
 // 注入脚本
