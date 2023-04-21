@@ -14,11 +14,12 @@ import (
 	"github.com/elazarl/goproxy"
 )
 
-// 获取真实 match url
-func realMatch(matchUrl string) string {
+// url 匹配
+func realMatch(matchUrl, realPath string) bool {
 	targetUrl := strings.Split(matchUrl, ".txt")[0]
-	targetUrl = strings.ReplaceAll(targetUrl, "_", "/")
-	return "^/" + targetUrl + "*"
+	realPath = strings.ReplaceAll(realPath, "/", "")
+	reg := regexp.MustCompile("^" + targetUrl + "*")
+	return reg.MatchString(realPath)
 }
 
 // ssl response
@@ -42,9 +43,7 @@ func handleResp(proxy *goproxy.ProxyHttpServer, domain string, rule file.FileRul
 // modify body
 func modifyRespBody(r *http.Response, rule file.FileRules) {
 	if r != nil && r.Request.Method != "OPTIONS" {
-		matchPath := realMatch(rule.MatchUrl)
-		reg := regexp.MustCompile(matchPath)
-		if reg.MatchString(r.Request.URL.Path) {
+		if realMatch(rule.MatchUrl, r.Request.URL.Path) {
 			log.Printf("[Modify][Body]: %s", r.Request.URL)
 			r.Body = io.NopCloser(bytes.NewReader(rule.JsonByte))
 		}

@@ -30,7 +30,7 @@ var MatchRules []FileMatchs
 
 // 示例文件
 func initExampleFile(path string) {
-	fileName := "api.exmaple.com_abc.txt"
+	fileName := "api.exmaple.comabc.txt"
 	filePath := filepath.ToSlash(path + "/" + fileName)
 	f, err := os.Create(filePath)
 	util.Stderr(err)
