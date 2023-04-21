@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 	"takeover/file"
@@ -15,11 +16,13 @@ import (
 )
 
 // url 匹配
-func realMatch(matchUrl, realPath string) bool {
+func realMatch(matchUrl string, realUrl *url.URL) bool {
 	targetUrl := strings.Split(matchUrl, ".txt")[0]
-	realPath = strings.ReplaceAll(realPath, "/", "")
-	reg := regexp.MustCompile("^" + targetUrl + "*")
-	return reg.MatchString(realPath)
+	remoteUrl := realUrl.String()
+	remoteUrl = strings.ReplaceAll(remoteUrl, "/", "")
+	remoteUrl = strings.ReplaceAll(remoteUrl, "?", "")
+	reg := regexp.MustCompile(targetUrl + "*")
+	return reg.MatchString(remoteUrl)
 }
 
 // ssl response
@@ -43,7 +46,7 @@ func handleResp(proxy *goproxy.ProxyHttpServer, domain string, rule file.FileRul
 // modify body
 func modifyRespBody(r *http.Response, rule file.FileRules) {
 	if r != nil && r.Request.Method != "OPTIONS" {
-		if realMatch(rule.MatchUrl, r.Request.URL.Path) {
+		if realMatch(rule.MatchUrl, r.Request.URL) {
 			log.Printf("[Modify][Body]: %s", r.Request.URL)
 			r.Body = io.NopCloser(bytes.NewReader(rule.JsonByte))
 		}
