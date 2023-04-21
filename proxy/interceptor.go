@@ -76,7 +76,7 @@ func insertScript(r *http.Response, target string) {
 	if strings.HasPrefix(contentType, "text/html") {
 		buffer := bytes.NewBuffer(make([]byte, 4096))
 
-		if file.YamlCfg.Inspect.Enabled {
+		if target != "" {
 			log.Printf("[Inject][Script][URL]: %s", r.Request.URL)
 			log.Printf("[Inject][Script]: %s", target)
 			inspect.InjectConsole(buffer, target)
@@ -85,7 +85,7 @@ func insertScript(r *http.Response, target string) {
 		_, err := io.Copy(buffer, r.Body)
 		util.Stderr(err)
 
-		if file.YamlCfg.EnabledTag {
+		if file.YamlCfg.Inspect.EnabledTag {
 			log.Printf("[Inject][Tag]: %s", r.Request.URL)
 			inspect.InjectTag(buffer)
 		}

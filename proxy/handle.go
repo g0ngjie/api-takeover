@@ -16,7 +16,7 @@ func CreateProxy(proxy *goproxy.ProxyHttpServer) {
 	// 注入调试工具
 	if len(file.YamlCfg.Inspect.Domains) > 0 {
 		for _, domain := range file.YamlCfg.Inspect.Domains {
-			handleInject(proxy, domain, file.YamlCfg.Inspect.Target)
+			handleInject(proxy, domain, file.YamlCfg.Inspect.DebugUse)
 		}
 	}
 }

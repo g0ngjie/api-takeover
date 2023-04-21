@@ -9,26 +9,23 @@ import (
 )
 
 type YamlInspect struct {
-	Enabled bool     `yaml:"enabled"`
-	Target  string   `yaml:"target"`
-	Domains []string `yaml:"domains"`
+	EnabledTag bool     `yaml:"enabled_tag"`
+	DebugUse   string   `yaml:"debug_use"`
+	Domains    []string `yaml:"domains"`
 }
 
 type Yaml struct {
-	EnabledTag bool        `yaml:"enabled_tag"`
-	Inspect    YamlInspect `yaml:"inspect"`
+	Inspect YamlInspect `yaml:"inspect"`
 }
 
 const FILE_NAME = "config.yaml"
 
-var exmapleYaml = []byte(`# # 示例配置
-# enabled_tag: true # 标签
-# inspect:          # 调试
-#   enabled: false
-#   # vConsole|eruda|mdebug
-#   target: "vConsole"
-#   domains:
-#     - www.google.com`)
+var exmapleYaml = []byte(`# 示例配置
+inspect: # 调试
+  enabled_tag: true # 标签
+  debug_use: "" # vConsole|eruda|mdebug
+  domains:
+    - www.google.com`)
 
 var YamlCfg Yaml
 
