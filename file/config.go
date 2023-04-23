@@ -22,7 +22,7 @@ const FILE_NAME = "config.yaml"
 
 var exmapleYaml = []byte(`# 示例配置
 inspect: # 调试
-  enabled_tag: true # 标签
+  enabled_tag: false # 标签
   debug_use: "" # vConsole|eruda|mdebug
   domains:
     - www.google.com`)
