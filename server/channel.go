@@ -9,12 +9,14 @@ import (
 )
 
 type Channel struct {
-	Status   int    `json:"status"`
-	Method   string `json:"method"`
-	Protocol string `json:"protocol"`
-	Host     string `json:"host"`
-	Path     string `json:"path"`
-	Type     string `json:"type"`
+	Status     int    `json:"status"`
+	Method     string `json:"method"`
+	Protocol   string `json:"protocol"`
+	Host       string `json:"host"`
+	Path       string `json:"path"`
+	Type       string `json:"type"`
+	OriginBody string `json:"originBody"`
+	NewBody    string `json:"newBody"`
 }
 
 var Channels *KQueue
@@ -26,14 +28,16 @@ func init() {
 }
 
 // 入队
-func SetData(r *http.Response) {
+func SetData(r *http.Response, originBody, newBody string) {
 	var data = Channel{
-		Status:   r.StatusCode,
-		Method:   r.Request.Method,
-		Protocol: r.Request.URL.Scheme,
-		Host:     r.Request.Host,
-		Path:     r.Request.URL.Path,
-		Type:     r.Header.Get("Content-Type"),
+		Status:     r.StatusCode,
+		Method:     r.Request.Method,
+		Protocol:   r.Request.URL.Scheme,
+		Host:       r.Request.Host,
+		Path:       r.Request.URL.Path,
+		Type:       r.Header.Get("Content-Type"),
+		OriginBody: originBody,
+		NewBody:    newBody,
 	}
 	Channels.Enqueue(data)
 }

@@ -49,7 +49,10 @@ func modifyRespBody(r *http.Response, rule file.FileRules) {
 	if r != nil && r.Request.Method != "OPTIONS" {
 		if realMatch(rule.MatchUrl, r.Request.URL) {
 			log.Printf("[Modify][Body]: %s", r.Request.URL)
-			go server.SetData(r)
+			buffer := make([]byte, 4096)
+			_, err := r.Body.Read(buffer)
+			util.Stderr(err)
+			go server.SetData(r, string(buffer), string(rule.JsonByte))
 			r.Body = io.NopCloser(bytes.NewReader(rule.JsonByte))
 		}
 	}
@@ -77,7 +80,7 @@ func insertScript(r *http.Response, target string) {
 	contentType := r.Header.Get("Content-Type")
 	if strings.HasPrefix(contentType, "text/html") {
 
-		go server.SetData(r)
+		go server.SetData(r, "", "")
 
 		buffer := bytes.NewBuffer(make([]byte, 4096))
 

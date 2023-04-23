@@ -19,6 +19,8 @@ type Panel = {
   host: string;
   path: string;
   type: string;
+  originBody?: string;
+  newBody?: string;
 };
 
 const createColumns = (): DataTableColumns<Panel> => {
