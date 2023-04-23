@@ -10,6 +10,7 @@ import (
 	"strings"
 	"takeover/file"
 	"takeover/inspect"
+	"takeover/server"
 	"takeover/util"
 
 	"github.com/elazarl/goproxy"
@@ -48,6 +49,7 @@ func modifyRespBody(r *http.Response, rule file.FileRules) {
 	if r != nil && r.Request.Method != "OPTIONS" {
 		if realMatch(rule.MatchUrl, r.Request.URL) {
 			log.Printf("[Modify][Body]: %s", r.Request.URL)
+			server.SetData(r)
 			r.Body = io.NopCloser(bytes.NewReader(rule.JsonByte))
 		}
 	}
@@ -74,6 +76,9 @@ func handleScript(proxy *goproxy.ProxyHttpServer, domain, target string) {
 func insertScript(r *http.Response, target string) {
 	contentType := r.Header.Get("Content-Type")
 	if strings.HasPrefix(contentType, "text/html") {
+
+		server.SetData(r)
+
 		buffer := bytes.NewBuffer(make([]byte, 4096))
 
 		if target != "" {

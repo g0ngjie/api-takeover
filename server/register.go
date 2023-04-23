@@ -1,6 +1,7 @@
 package server
 
 import (
+	"io"
 	"net/http"
 	"takeover/resources"
 
@@ -9,6 +10,8 @@ import (
 
 func RegisterRouter() (r *gin.Engine) {
 	gin.SetMode(gin.ReleaseMode)
+	gin.DefaultWriter = io.Discard
+
 	r = gin.Default()
 
 	resources.Init(r)

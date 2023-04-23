@@ -1,10 +1,16 @@
 <template>
-  <n-data-table size="small" :columns="columns" :data="data" :bordered="false" />
+  <n-data-table
+    size="small"
+    :columns="columns"
+    :data="data"
+    :bordered="false"
+  />
 </template>
 <script setup lang="ts">
 import { NDataTable } from "naive-ui";
 import type { DataTableColumns } from "naive-ui";
 import { useData } from "./data";
+import { ref } from "vue";
 
 type Panel = {
   status: number;
@@ -51,9 +57,12 @@ const createColumns = (): DataTableColumns<Panel> => {
   ];
 };
 
-const data: Panel[] = [];
+const data = ref<Panel[]>([]);
 
 const columns = createColumns();
 
-useData()
+setInterval(async () => {
+  const getData = await useData();
+  data.value.push(...getData);
+}, 1000);
 </script>
