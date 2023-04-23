@@ -13,6 +13,11 @@ func RegisterRouter() (r *gin.Engine) {
 
 	resources.Init(r)
 
+	channel := r.Group("/channel")
+	{
+		channel.GET("/get-data", getData)
+	}
+
 	//定义默认路由
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
