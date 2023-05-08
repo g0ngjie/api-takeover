@@ -53,6 +53,7 @@ func modifyRespBody(r *http.Response, rule file.FileRules) {
 			_, err := r.Body.Read(buffer)
 			util.Stderr(err)
 			go server.SetData(r, string(buffer), string(rule.JsonByte))
+			r.StatusCode = http.StatusOK
 			r.Body = io.NopCloser(bytes.NewReader(rule.JsonByte))
 		}
 	}
